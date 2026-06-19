@@ -1,0 +1,149 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brøset Violence Checklist</title>
+<style>
+body{margin:0;font-family:-apple-system,Arial;background:#f3f4f6}
+header{background:#111827;color:#fff;padding:16px}
+h1{margin:0;font-size:20px}
+main{max-width:760px;margin:auto;padding:12px}
+.card{background:#fff;border-radius:14px;padding:14px;margin:12px 0;border:1px solid #ddd}
+.item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.item:last-child{border-bottom:none}
+.btn{border:0;border-radius:999px;padding:10px 14px;font-weight:800}
+.off{background:#e5e7eb}
+.on{background:#111827;color:#fff}
+.vas{height:14px;background:#d1d5db;border-radius:999px;position:relative;touch-action:none}
+.knob{position:absolute;top:50%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:#111827;border:3px solid #fff}
+.result{display:none}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800;margin-top:6px}
+.low{background:#dcfce7;color:#14532d}
+.mid{background:#fef9c3;color:#78350f}
+.high{background:#fee2e2;color:#7f1d1d}
+button.big{width:100%;padding:14px;border:0;border-radius:12px;background:#111827;color:#fff;font-weight:900;margin-top:8px}
+.small{font-size:13px;color:#444;line-height:1.4}
+</style>
+</head>
+<body>
+<header><h1>Brøset Violence Checklist</h1></header>
+<main>
+
+<div class="card" id="items"></div>
+
+<div class="card">
+<div class="vas" id="vasBar">
+<div class="knob" id="knob"></div>
+</div>
+</div>
+
+<div class="card">
+<button class="big" onclick="flip()">Schieber umdrehen</button>
+<button class="big" style="background:#e5e7eb;color:#111" onclick="resetAll()">Reset</button>
+</div>
+
+<div class="card result" id="res">
+<div class="small">
+<b>BVC:</b> <span id="bvcOut"></span><br>
+<b>VAS:</b> <span id="vasOut"></span><br>
+<b>Gesamt:</b> <span id="totalOut"></span><br>
+</div>
+<div id="badge" class="badge"></div>
+<hr>
+<div class="small" id="action"></div>
+</div>
+
+</main>
+
+<script>
+const map="111223333444444445555555555555555566666666";
+let state=[0,0,0,0,0,0];
+
+const items=[
+["Verwirrtheit","Desorientiert"],
+["Reizbarkeit","leicht provozierbar"],
+["Lärmendes Verhalten","laut"],
+["Verbale Drohung","Bedrohung"],
+["Körperliche Drohung","Aggressiv"],
+["Sachaggression","Beschädigung"]
+];
+
+function init(){
+let box=document.getElementById("items");
+items.forEach((t,i)=>{
+let d=document.createElement("div");
+d.className="item";
+d.innerHTML="<div><b>"+t[0]+"</b><div class='small'>"+t[1]+"</div></div>"+
+"<button class='btn off' id='b"+i+"' onclick='toggle("+i+")'>Nein</button>";
+box.appendChild(d);
+});
+}
+
+function toggle(i){
+state[i]=state[i]?0:1;
+let b=document.getElementById("b"+i);
+b.className="btn "+(state[i]?"on":"off");
+b.innerText=state[i]?"Ja":"Nein";
+}
+
+let bar,knob;
+
+function setPos(x){
+let r=bar.getBoundingClientRect();
+let p=(x-r.left)/r.width;
+p=Math.max(0,Math.min(1,p));
+knob.style.left=(p*100)+"%";
+knob.dataset.p=p;
+}
+
+function vasValue(){
+let p=parseFloat(knob.dataset.p||0);
+let idx=Math.round(p*(map.length-1));
+return parseInt(map[idx]);
+}
+
+function calc(){
+let bvc=state.reduce((a,b)=>a+b,0);
+return bvc + vasValue();
+}
+
+function flip(){
+let total=calc();
+document.getElementById("res").style.display="block";
+document.getElementById("bvcOut").innerText=state.reduce((a,b)=>a+b,0);
+document.getElementById("vasOut").innerText=vasValue();
+document.getElementById("totalOut").innerText=total;
+
+let badge=document.getElementById("badge");
+let action=document.getElementById("action");
+
+if(total<=3){badge.className="badge low";badge.innerText="Niedriges Risiko";action.innerText="Standardbeobachtung";}
+else if(total<=6){badge.className="badge mid";badge.innerText="Mittleres Risiko";action.innerText="Engmaschig beobachten";}
+else{badge.className="badge high";badge.innerText="Hohes Risiko";action.innerText="Intensivüberwachung";}
+}
+
+function resetAll(){
+state=[0,0,0,0,0,0];
+for(let i=0;i<6;i++){
+let b=document.getElementById("b"+i);
+b.className="btn off";
+b.innerText="Nein";
+}
+knob.style.left="0%";
+knob.dataset.p=0;
+document.getElementById("res").style.display="none";
+}
+
+window.onload=function(){
+bar=document.getElementById("vasBar");
+knob=document.getElementById("knob");
+bar.addEventListener("click",e=>setPos(e.clientX));
+bar.addEventListener("touchstart",e=>setPos(e.touches[0].clientX));
+init();
+};
+</script>
+
+</body>
+</html>
