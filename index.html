@@ -1,0 +1,113 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brøset Violence Checklist</title>
+<style>
+body{margin:0;font-family:-apple-system,Arial;background:#f3f4f6}
+header{background:#111827;color:#fff;padding:16px}
+main{max-width:760px;margin:auto;padding:12px}
+.card{background:#fff;padding:14px;margin:12px 0;border-radius:14px}
+.item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee}
+.btn{border:0;border-radius:999px;padding:10px 14px}
+.off{background:#e5e7eb}
+.on{background:#111827;color:#fff}
+.bar{height:12px;background:linear-gradient(90deg,#22c55e,#facc15,#fb923c,#ef4444);border-radius:999px;position:relative}
+.marker{position:absolute;width:6px;height:18px;background:#111;top:-3px;border-radius:3px}
+.result{display:none}
+.big{font-size:40px;font-weight:900}
+button.big{width:100%;padding:14px;border:0;border-radius:12px;background:#111827;color:#fff;font-weight:900}
+</style>
+</head>
+<body>
+
+<header>
+<h2>Brøset Violence Checklist</h2>
+</header>
+
+<main>
+
+<div class="card" id="items"></div>
+
+<div class="card">
+<input id="vas" type="range" min="0" max="100" oninput="move()">
+<div class="bar"><div id="m" class="marker"></div></div>
+</div>
+
+<div class="card">
+<button class="big" onclick="flip()">Schieber umdrehen</button>
+</div>
+
+<div class="card result" id="res">
+<div class="big" id="score"></div>
+<div id="cat"></div>
+<hr>
+<div style="font-size:13px;line-height:1.4">
+BVC dient der strukturierten Einschätzung akuter Gewaltbereitschaft im psychiatrischen Setting.
+Score 0–3 niedrig, 4–6 leicht erhöht, 7–9 erhöht, 10–12 hoch.
+</div>
+</div>
+
+</main>
+
+<script>
+
+var state=[0,0,0,0,0,0];
+var items=["Verwirrtheit","Reizbarkeit","Lärm","Verbale Drohung","Körperliche Drohung","Sachaggression"];
+
+function init(){
+var box=document.getElementById("items");
+for(var i=0;i<items.length;i++){
+var d=document.createElement("div");
+d.className="item";
+d.innerHTML='<span>'+items[i]+'</span><button class="btn off" id="b'+i+'" onclick="toggle('+i+')">0</button>';
+box.appendChild(d);
+}
+}
+
+function toggle(i){
+state[i]=state[i]?0:1;
+var b=document.getElementById("b"+i);
+b.className="btn "+(state[i]?"on":"off");
+b.innerHTML=state[i]?"1":"0";
+}
+
+function vas(){
+var v=document.getElementById("vas").value;
+var map="111223333444444445555555555555555566666666";
+var idx=Math.round((v/100)*(map.length-1));
+return parseInt(map.charAt(idx));
+}
+
+function move(){
+document.getElementById("m").style.left=document.getElementById("vas").value+"%";
+}
+
+function total(){
+var bvc=0;
+for(var i=0;i<state.length;i++){bvc+=state[i];}
+return bvc + vas();
+}
+
+function flip(){
+var t=total();
+document.getElementById("res").style.display="block";
+document.getElementById("score").innerHTML=t+"/12";
+
+var c="";
+if(t<=3)c="Niedriges Risiko";
+else if(t<=6)c="Leicht erhöht";
+else if(t<=9)c="Erhöhtes Risiko";
+else c="Hohes Risiko";
+
+document.getElementById("cat").innerHTML=c;
+}
+
+init();move();
+
+</script>
+
+</body>
+</html>
